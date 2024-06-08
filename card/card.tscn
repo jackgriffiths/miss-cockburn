@@ -21,6 +21,7 @@ debug_color = Color(0.616775, 0.356762, 1, 0.42)
 [node name="Sprite" type="TextureRect" parent="."]
 offset_right = 40.0
 offset_bottom = 40.0
+mouse_filter = 0
 texture = ExtResource("2_b803h")
 metadata/_edit_use_anchors_ = true
 metadata/_edit_lock_ = true

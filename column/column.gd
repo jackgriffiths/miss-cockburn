@@ -6,7 +6,7 @@ const CARD_OFFSET = Vector2(0, 50)
 var _last_card: Card = null
 var _next_card_position = Vector2.ZERO
 
-@onready var _dropzone: Area2D = $Dropzone
+@onready var _dropzone = $Dropzone
 
 
 func add_card(card: Card, tween: Tween, animation_duration: float) -> PropertyTweener:
@@ -73,3 +73,12 @@ func disable_dropzone():
 
 func enable_dropzone():
 	_dropzone.enable()
+
+
+func get_size() -> Vector2:
+	# The dropzone is always the last item in the column so
+	# its position (and size) can be used to calculate the
+	# size of the column.
+	var width = _dropzone.get_size().x
+	var height = _dropzone.position.y + _dropzone.get_size().y
+	return Vector2(width, height)

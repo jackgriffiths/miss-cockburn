@@ -13,7 +13,7 @@ const ALLOW_INVALID_MOVES = false
 var _state = State.INITIALIZING
 var _deck: Array[Card] = []
 
-@onready var _camera: Camera2D = $Camera
+@onready var _camera = $Camera
 @onready var _deal_origin: Marker2D = $DealOrigin
 @onready var _columns: Array[Column] = [
 	$Column1,
@@ -116,6 +116,8 @@ func _gather_cards() -> void:
 	for column in _columns:
 		column.after_cards_removed()
 
+	_update_camera_limits()
+
 	await tween.finished
 
 	for card in _deck:
@@ -167,7 +169,14 @@ func _on_card_drag(dragged_card: Card):
 	for card in cards_moving:
 		card.z_index = 2
 
+	# Auto scroll will allow the user to drag the card
+	# on to cards which may initially be out of view.
+	_camera.auto_scroll = true
+
 	await dragged_card.drag_ended
+
+	# Auto scroll should only be on while a card is being dragged.
+	_camera.auto_scroll = false
 
 	# Prevent the user from interacting with this card again while
 	# we handle what to do after the drag is completed.
@@ -194,6 +203,7 @@ func _on_card_drag(dragged_card: Card):
 			position_tweener.set_delay(card_idx * 0.05)
 
 		initial_column.after_cards_removed()
+		_update_camera_limits()
 	else:
 		# Move the cards back to where they were started.
 		for card_idx in cards_moving.size():
@@ -221,3 +231,11 @@ func _is_valid_move(moved_card: Card, dropzone: Dropzone):
 		return moved_card.rank == 13
 	else:
 		return moved_card.suit == target_card.suit and moved_card.rank == target_card.rank - 1
+
+
+func _update_camera_limits():
+	var table_height = _columns \
+			.map(func(c: Column): return c.position.y + c.get_size().y) \
+			.max()
+
+	_camera.adjust_limits_for_table_height(table_height)

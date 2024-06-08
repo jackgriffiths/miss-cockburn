@@ -3,8 +3,18 @@ extends Area2D
 
 @export var column: Column
 
+var _size: Vector2
+
 @onready var _highlight: ColorRect = $Highlight
 @onready var _collision_shape: CollisionShape2D = $CollisionShape
+
+
+func _ready():
+	_size = (_collision_shape.shape as RectangleShape2D).size
+
+
+func get_size() -> Vector2:
+	return _size
 
 
 func enable():
