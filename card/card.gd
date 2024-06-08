@@ -17,7 +17,7 @@ const SUITS = [
 
 var suit: Suit
 var rank = 1
-var is_face_up = false
+var is_face_up = false: set = _set_is_face_up
 var can_interact = false
 var can_make_face_up = false
 
@@ -33,7 +33,8 @@ func _ready() -> void:
 
 
 func _update_sprite_texture() -> void:
-	_sprite.texture = load(_get_texture_path())
+	if _sprite:
+		_sprite.texture = load(_get_texture_path())
 
 
 func _get_texture_path() -> String:
@@ -75,3 +76,8 @@ func _handle_input(event: InputEvent):
 func _process(_delta: float) -> void:
 	if _is_dragging:
 		global_position = get_global_mouse_position() - _drag_offset
+
+
+func _set_is_face_up(value: bool) -> void:
+	is_face_up = value
+	_update_sprite_texture()
