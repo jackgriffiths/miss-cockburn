@@ -8,6 +8,7 @@ enum State {
 
 const DEAL_DURATION = 2.0
 const GATHER_DURATION = 1.0
+const ALLOW_INVALID_MOVES = false
 
 var _state = State.INITIALIZING
 var _deck: Array[Card] = []
@@ -113,7 +114,7 @@ func _gather_cards() -> void:
 		tween.tween_property(card, "position", _deal_origin.position, GATHER_DURATION)
 
 	for column in _columns:
-		column.reset()
+		column.after_cards_removed()
 
 	await tween.finished
 
@@ -139,10 +140,14 @@ func _on_card_drag(dragged_card: Card):
 			card.can_interact = false
 	
 	var initial_column = dragged_card.get_parent() as Column
-	var cards_moving: Array[Card] = [dragged_card]
-	
+
+	# Disable the dropzone so the dragged card can't interact with the
+	# dropzone in its current column.
+	initial_column.disable_dropzone()
+
 	# To move the cards beneath the card being dragged, remote transforms
 	# are attached as children of the card being dragged.
+	var cards_moving: Array[Card] = [dragged_card]
 	var remote_transforms: Array[RemoteTransform2D] = []
 	
 	for card in initial_column.get_cards_after(dragged_card):
@@ -157,9 +162,10 @@ func _on_card_drag(dragged_card: Card):
 	# cards back to where they started.
 	var initial_positions = cards_moving.map(func(c): return c.position)
 
-	# The cards moving need to appear on top of all the other cards.
+	# The cards moving need to appear on top of all the
+	# other cards and dropzones.
 	for card in cards_moving:
-		card.z_index = 1
+		card.z_index = 2
 
 	await dragged_card.drag_ended
 
@@ -172,21 +178,46 @@ func _on_card_drag(dragged_card: Card):
 	for remote_tranform in remote_transforms:
 		remote_tranform.queue_free()
 
+	var dropzone = dragged_card.get_overlapping_dropzone()
+	var is_valid_move = dropzone && _is_valid_move(dragged_card, dropzone)
+
 	# A parallel tween is used so that the cards all begin to move
 	# to their destination in a staggered way.
 	var tween = create_tween() \
 			.set_parallel(true) \
 			.set_ease(Tween.EASE_OUT)
 
-	# Move the cards back to where they were started.
-	for card_idx in cards_moving.size():
-		var card = cards_moving[card_idx]
-		var initial_position = initial_positions[card_idx] as Vector2
-		var delay = card_idx * 0.05
-		tween.tween_property(card, "position", initial_position, 0.1).set_delay(delay)
+	if is_valid_move:
+		for card_idx in cards_moving.size():
+			var new_column = dropzone.column
+			var position_tweener = new_column.add_card(cards_moving[card_idx], tween, 0.1)
+			position_tweener.set_delay(card_idx * 0.05)
+
+		initial_column.after_cards_removed()
+	else:
+		# Move the cards back to where they were started.
+		for card_idx in cards_moving.size():
+			var card = cards_moving[card_idx]
+			var initial_position = initial_positions[card_idx] as Vector2
+			var delay = card_idx * 0.05
+			tween.tween_property(card, "position", initial_position, 0.1).set_delay(delay)
 
 	await tween.finished
+
+	initial_column.enable_dropzone()
 
 	for card in _deck:
 		card.can_interact = true
 		card.z_index = 0
+
+
+func _is_valid_move(moved_card: Card, dropzone: Dropzone):
+	if ALLOW_INVALID_MOVES:
+		return true
+
+	var target_card = dropzone.column.get_last_card()
+
+	if target_card == null:
+		return moved_card.rank == 13
+	else:
+		return moved_card.suit == target_card.suit and moved_card.rank == target_card.rank - 1

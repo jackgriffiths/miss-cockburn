@@ -26,13 +26,21 @@ var can_make_face_up = false
 
 var _is_dragging = false
 var _drag_offset = Vector2.ZERO
+var _entered_dropzones: Array[Dropzone] = []
 
+@onready var _collision_shape: CollisionShape2D = $CollisionShape
 @onready var _sprite: TextureRect = $Sprite
 
 
 func _ready() -> void:
+	connect("area_entered", _on_entered_dropzone)
+	connect("area_exited", _on_exited_dropzone)
 	_sprite.connect("gui_input", _handle_input)
 	_update_sprite_texture()
+
+
+func get_overlapping_dropzone() -> Dropzone:
+	return _entered_dropzones[0] if not _entered_dropzones.is_empty() else null
 
 
 func _update_sprite_texture() -> void:
@@ -66,10 +74,12 @@ func _handle_input(event: InputEvent):
 		if event.is_action_pressed("click"):
 			_is_dragging = true
 			_drag_offset = get_global_mouse_position() - global_position
+			_collision_shape.set_deferred("disabled", false)
 			drag_started.emit()
 		elif event.is_action_released("click") && _is_dragging: 
 			_is_dragging = false
 			_drag_offset = Vector2.ZERO
+			_collision_shape.set_deferred("disabled", true)
 			drag_ended.emit()
 	elif can_make_face_up:
 		if event.is_action_pressed("click"):
@@ -86,3 +96,20 @@ func _process(_delta: float) -> void:
 func _set_is_face_up(value: bool) -> void:
 	is_face_up = value
 	_update_sprite_texture()
+
+
+func _on_entered_dropzone(dropzone: Dropzone) -> void:
+	var is_first = _entered_dropzones.is_empty()
+	_entered_dropzones.append(dropzone)
+
+	if is_first:
+		dropzone.highlight()
+
+func _on_exited_dropzone(dropzone: Dropzone) -> void:
+	var idx = _entered_dropzones.find(dropzone)
+	if idx != -1:
+		_entered_dropzones.remove_at(idx)
+		dropzone.remove_highlight()
+
+		if not _entered_dropzones.is_empty():
+			_entered_dropzones[0].highlight()

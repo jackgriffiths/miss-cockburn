@@ -1,0 +1,24 @@
+[gd_scene load_steps=3 format=3 uid="uid://dokfbtbdtfs22"]
+
+[ext_resource type="Script" path="res://dropzone/dropzone.gd" id="1_5aom1"]
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_uu5ak"]
+size = Vector2(103, 138)
+
+[node name="Dropzone" type="Area2D"]
+collision_mask = 0
+monitoring = false
+script = ExtResource("1_5aom1")
+metadata/_edit_lock_ = true
+
+[node name="Highlight" type="ColorRect" parent="."]
+visible = false
+offset_right = 103.0
+offset_bottom = 138.0
+color = Color(0.343511, 0.679309, 0.858408, 0.580392)
+metadata/_edit_lock_ = true
+
+[node name="CollisionShape" type="CollisionShape2D" parent="."]
+position = Vector2(51.5, 69)
+shape = SubResource("RectangleShape2D_uu5ak")
+metadata/_edit_lock_ = true

@@ -1,6 +1,11 @@
-[gd_scene load_steps=2 format=3 uid="uid://co7smiwwlm1fa"]
+[gd_scene load_steps=3 format=3 uid="uid://co7smiwwlm1fa"]
 
 [ext_resource type="Script" path="res://column/column.gd" id="1_3hbsa"]
+[ext_resource type="PackedScene" uid="uid://dokfbtbdtfs22" path="res://dropzone/dropzone.tscn" id="2_wfn7y"]
 
 [node name="Column" type="Node2D"]
 script = ExtResource("1_3hbsa")
+
+[node name="Dropzone" parent="." node_paths=PackedStringArray("column") instance=ExtResource("2_wfn7y")]
+z_index = 1
+column = NodePath("..")
