@@ -32,3 +32,8 @@ func get_cards_after(card: Card) -> Array[Card]:
 			after.append(child)
 
 	return after
+
+
+func reset() -> void:
+	_last_card = null
+	_next_card_position = Vector2.ZERO

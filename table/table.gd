@@ -1,7 +1,15 @@
 extends Node2D
 
-const DEAL_DURATION = 2.0
+enum State {
+	INITIALIZING,
+	DEALING,
+	PLAYING,
+}
 
+const DEAL_DURATION = 2.0
+const GATHER_DURATION = 1.0
+
+var _state = State.INITIALIZING
 var _deck: Array[Card] = []
 
 @onready var _camera: Camera2D = $Camera
@@ -18,9 +26,28 @@ var _deck: Array[Card] = []
 
 
 func _ready():
+	# Initialize
+	_state = State.INITIALIZING
 	_deck = _generate_deck()
+	
+	# Deal
+	_state = State.DEALING
 	await _deal()
+	
+	# Play
+	_state = State.PLAYING
 	_enable_card_interactions()
+
+
+func start_new_game() -> void:
+	if _state == State.PLAYING:
+		_state = State.DEALING
+		_disable_card_interactions()
+		await _gather_cards()
+		await get_tree().create_timer(0.5).timeout
+		await _deal()
+		_enable_card_interactions()
+		_state = State.PLAYING
 
 
 func _generate_deck() -> Array[Card]:
@@ -73,9 +100,35 @@ func _deal():
 	await tween.finished
 
 
+func _gather_cards() -> void:
+	var tween = create_tween() \
+			.set_parallel(true) \
+			.set_ease(Tween.EASE_OUT)
+
+	for card in _deck:
+		# Detach the card from the column
+		card.reparent(self)
+
+		# Animate the card back to where it will be dealt from
+		tween.tween_property(card, "position", _deal_origin.position, GATHER_DURATION)
+
+	for column in _columns:
+		column.reset()
+
+	await tween.finished
+
+	for card in _deck:
+		card.is_face_up = false
+
+
 func _enable_card_interactions():
 	for card in _deck:
 		card.can_interact = true
+
+
+func _disable_card_interactions():
+	for card in _deck:
+		card.can_interact = false
 
 
 func _on_card_drag(dragged_card: Card):
