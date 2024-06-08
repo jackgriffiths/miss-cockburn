@@ -1,6 +1,9 @@
 class_name Card
 extends Node2D
 
+signal drag_started
+signal drag_ended
+
 enum Suit {
 	CLUBS,
 	DIAMONDS,
@@ -63,9 +66,11 @@ func _handle_input(event: InputEvent):
 		if event.is_action_pressed("click"):
 			_is_dragging = true
 			_drag_offset = get_global_mouse_position() - global_position
+			drag_started.emit()
 		elif event.is_action_released("click") && _is_dragging: 
 			_is_dragging = false
 			_drag_offset = Vector2.ZERO
+			drag_ended.emit()
 	elif can_make_face_up:
 		if event.is_action_pressed("click"):
 			is_face_up = true

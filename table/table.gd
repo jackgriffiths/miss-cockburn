@@ -19,7 +19,8 @@ var _deck: Array[Card] = []
 
 func _ready():
 	_deck = _generate_deck()
-	_deal()
+	await _deal()
+	_enable_card_interactions()
 
 
 func _generate_deck() -> Array[Card]:
@@ -33,8 +34,11 @@ func _generate_deck() -> Array[Card]:
 			card.suit = suit
 			card.rank = rank
 			card.is_face_up = false
+			card.can_make_face_up = false
 			card.can_interact = false
 			card.position = _deal_origin.position
+			card.connect("drag_started", _on_card_drag.bind(card))
+
 			deck.append(card)
 			add_child(card)
 
@@ -66,3 +70,70 @@ func _deal():
 				column.add_card(card, tween, DEAL_DURATION / 52)
 
 	assert(to_deal.size() == 0)
+	await tween.finished
+
+
+func _enable_card_interactions():
+	for card in _deck:
+		card.can_interact = true
+
+
+func _on_card_drag(dragged_card: Card):
+	# Prevent the user from interacting with any other cards while
+	# this card is being dragged.
+	for card in _deck:
+		if card != dragged_card:
+			card.can_interact = false
+	
+	var initial_column = dragged_card.get_parent() as Column
+	var cards_moving: Array[Card] = [dragged_card]
+	
+	# To move the cards beneath the card being dragged, remote transforms
+	# are attached as children of the card being dragged.
+	var remote_transforms: Array[RemoteTransform2D] = []
+	
+	for card in initial_column.get_cards_after(dragged_card):
+		var remote_transform = RemoteTransform2D.new()
+		remote_transform.remote_path = card.get_path()
+		remote_transform.position = cards_moving.size() * Column.CARD_OFFSET
+		dragged_card.add_child(remote_transform)
+		remote_transforms.append(remote_transform)
+		cards_moving.append(card)
+
+	# Store the intial positions so that if necessary we can reset the
+	# cards back to where they started.
+	var initial_positions = cards_moving.map(func(c): return c.position)
+
+	# The cards moving need to appear on top of all the other cards.
+	for card in cards_moving:
+		card.z_index = 1
+
+	await dragged_card.drag_ended
+
+	# Prevent the user from interacting with this card again while
+	# we handle what to do after the drag is completed.
+	dragged_card.can_interact = false
+
+	# The cards should move independently now so the
+	# remote transforms aren't required.
+	for remote_tranform in remote_transforms:
+		remote_tranform.queue_free()
+
+	# A parallel tween is used so that the cards all begin to move
+	# to their destination in a staggered way.
+	var tween = create_tween() \
+			.set_parallel(true) \
+			.set_ease(Tween.EASE_OUT)
+
+	# Move the cards back to where they were started.
+	for card_idx in cards_moving.size():
+		var card = cards_moving[card_idx]
+		var initial_position = initial_positions[card_idx] as Vector2
+		var delay = card_idx * 0.05
+		tween.tween_property(card, "position", initial_position, 0.1).set_delay(delay)
+
+	await tween.finished
+
+	for card in _deck:
+		card.can_interact = true
+		card.z_index = 0

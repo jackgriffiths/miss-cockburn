@@ -19,3 +19,16 @@ func add_card(card: Card, tween: Tween, animation_duration: float) -> PropertyTw
 	_next_card_position += CARD_OFFSET
 
 	return position_tween
+
+
+func get_cards_after(card: Card) -> Array[Card]:
+	var found_initial = false
+	var after: Array[Card] = []
+
+	for child in get_children():
+		if child == card:
+			found_initial = true
+		elif found_initial and child is Card:
+			after.append(child)
+
+	return after
