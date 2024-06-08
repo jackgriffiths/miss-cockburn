@@ -33,4 +33,7 @@ func _arrange_deck() -> void:
 		var row = i / cols
 		var col = i % cols
 		card.position = Vector2(col * 105, row * 140)
+		card.is_face_up = i % 2 == 0
+		card.can_interact = true
+		card.can_make_face_up = not card.is_face_up
 		add_child(card)

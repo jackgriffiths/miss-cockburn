@@ -18,11 +18,17 @@ const SUITS = [
 var suit: Suit
 var rank = 1
 var is_face_up = false
+var can_interact = false
+var can_make_face_up = false
+
+var _is_dragging = false
+var _drag_offset = Vector2.ZERO
 
 @onready var _sprite: TextureRect = $Sprite
 
 
 func _ready() -> void:
+	_sprite.connect("gui_input", _handle_input)
 	_update_sprite_texture()
 
 
@@ -46,3 +52,26 @@ func _get_texture_path() -> String:
 		_:
 			assert(false, "Unhandled suit")
 			return "res://card/assets/back.png"
+
+
+func _handle_input(event: InputEvent):
+	if not can_interact:
+		return
+
+	if is_face_up:
+		if event.is_action_pressed("click"):
+			_is_dragging = true
+			_drag_offset = get_global_mouse_position() - global_position
+		elif event.is_action_released("click") && _is_dragging: 
+			_is_dragging = false
+			_drag_offset = Vector2.ZERO
+	elif can_make_face_up:
+		if event.is_action_pressed("click"):
+			is_face_up = true
+			can_make_face_up = false
+			_update_sprite_texture()
+
+
+func _process(_delta: float) -> void:
+	if _is_dragging:
+		global_position = get_global_mouse_position() - _drag_offset
