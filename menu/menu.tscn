@@ -1,0 +1,35 @@
+[gd_scene load_steps=2 format=3 uid="uid://cnkcffvt3r3f2"]
+
+[ext_resource type="Script" path="res://menu/menu.gd" id="1_j8rl0"]
+
+[node name="Menu" type="CanvasLayer"]
+script = ExtResource("1_j8rl0")
+
+[node name="Background" type="ColorRect" parent="."]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_force_pass_scroll_events = false
+color = Color(1, 1, 1, 0.75)
+
+[node name="Content" type="CenterContainer" parent="."]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 0
+mouse_force_pass_scroll_events = false
+
+[node name="Column" type="VBoxContainer" parent="Content"]
+layout_mode = 2
+
+[node name="ContinueButton" type="Button" parent="Content/Column"]
+layout_mode = 2
+text = "Continue"
+
+[node name="QuitButton" type="Button" parent="Content/Column"]
+layout_mode = 2
+text = "Quit"
