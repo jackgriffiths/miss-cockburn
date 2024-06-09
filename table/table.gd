@@ -83,6 +83,13 @@ func _deal():
 	to_deal.shuffle()
 	await _shuffle_audio_player.finished
 
+	# Temporarily adjust the z-indexes of all the cards.
+	# As the cards are dealt, their z-indexes will be reset
+	# back to 0, making it look like the cards are being
+	# drawn from the top of the deck.
+	for card_idx in to_deal.size():
+		to_deal[card_idx].z_index = -1
+
 	# Used to create the deal animation
 	var tween = create_tween() \
 			.set_parallel(false) \
@@ -103,7 +110,12 @@ func _deal():
 				var card = to_deal.pop_front()
 				var column = _columns[col_idx]
 				var is_face_down = col_idx > 1 and row_idx < 2
-				tween.tween_callback(func(): card.is_face_up = not is_face_down)
+				tween.tween_callback(func():
+					card.is_face_up = not is_face_down
+					# Reset the z-index so that the card appears to be
+					# drawn from the top of the deck.
+					card.z_index = 0
+				)
 				column.add_card(card, tween, DEAL_DURATION / 52)
 				tween.tween_callback(_card_contact_audio_player.play)
 
