@@ -6,8 +6,10 @@ enum State {
 	PLAYING,
 }
 
-const DEAL_DURATION = 2.0
+const DEAL_DURATION = 3.0
 const GATHER_DURATION = 1.0
+const CARD_MOVE_DURATION = 0.1
+const CARD_MOVE_STAGGER_DURATION = 0.05
 const ALLOW_INVALID_MOVES = false
 
 var _state = State.INITIALIZING
@@ -24,6 +26,8 @@ var _deck: Array[Card] = []
 	$Column6,
 	$Column7,
 ]
+@onready var _shuffle_audio_player = $ShuffleAudioPlayer
+@onready var _card_contact_audio_player = $CardContactAudioPlayer
 
 
 func _ready():
@@ -45,7 +49,6 @@ func start_new_game() -> void:
 		_state = State.DEALING
 		_disable_card_interactions()
 		await _gather_cards()
-		await get_tree().create_timer(0.5).timeout
 		await _deal()
 		_enable_card_interactions()
 		_state = State.PLAYING
@@ -75,12 +78,18 @@ func _generate_deck() -> Array[Card]:
 
 func _deal():
 	var to_deal = _deck.duplicate()
+
+	_shuffle_audio_player.play()
 	to_deal.shuffle()
+	await _shuffle_audio_player.finished
 
 	# Used to create the deal animation
 	var tween = create_tween() \
 			.set_parallel(false) \
 			.set_ease(Tween.EASE_OUT)
+
+	# Add a short delay between the shuffle sound and the deal animation
+	tween.tween_interval(0.2)
 
 	var num_rows = 10
 	var num_cols = _columns.size()
@@ -96,6 +105,7 @@ func _deal():
 				var is_face_down = col_idx > 1 and row_idx < 2
 				tween.tween_callback(func(): card.is_face_up = not is_face_down)
 				column.add_card(card, tween, DEAL_DURATION / 52)
+				tween.tween_callback(_card_contact_audio_player.play)
 
 	assert(to_deal.size() == 0)
 	await tween.finished
@@ -199,8 +209,16 @@ func _on_card_drag(dragged_card: Card):
 	if is_valid_move:
 		for card_idx in cards_moving.size():
 			var new_column = dropzone.column
-			var position_tweener = new_column.add_card(cards_moving[card_idx], tween, 0.1)
-			position_tweener.set_delay(card_idx * 0.05)
+			var card = cards_moving[card_idx]
+
+			# Staggers the cards
+			var movement_delay = card_idx * CARD_MOVE_STAGGER_DURATION
+			new_column.add_card(card, tween, CARD_MOVE_DURATION) \
+					.set_delay(movement_delay)
+
+			# Play the sound when the card reaches its destination.
+			tween.tween_callback(_card_contact_audio_player.play) \
+					.set_delay(movement_delay + CARD_MOVE_DURATION)
 
 		initial_column.after_cards_removed()
 		_update_camera_limits()
@@ -208,9 +226,16 @@ func _on_card_drag(dragged_card: Card):
 		# Move the cards back to where they were started.
 		for card_idx in cards_moving.size():
 			var card = cards_moving[card_idx]
-			var initial_position = initial_positions[card_idx] as Vector2
-			var delay = card_idx * 0.05
-			tween.tween_property(card, "position", initial_position, 0.1).set_delay(delay)
+			var initial_position = initial_positions[card_idx]
+
+			# Staggers the cards
+			var movement_delay = card_idx * CARD_MOVE_STAGGER_DURATION
+			tween.tween_property(card, "position", initial_position, CARD_MOVE_DURATION) \
+					.set_delay(movement_delay)
+
+			# Play the sound when the card reaches its destination
+			tween.tween_callback(_card_contact_audio_player.play) \
+					.set_delay(movement_delay + CARD_MOVE_DURATION)
 
 	await tween.finished
 

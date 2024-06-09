@@ -1,8 +1,16 @@
-[gd_scene load_steps=4 format=3 uid="uid://djltl6khxoam6"]
+[gd_scene load_steps=7 format=3 uid="uid://djltl6khxoam6"]
 
 [ext_resource type="Script" path="res://table/table.gd" id="1_2jvkd"]
 [ext_resource type="Script" path="res://table/camera.gd" id="2_7mmgb"]
 [ext_resource type="PackedScene" uid="uid://co7smiwwlm1fa" path="res://column/column.tscn" id="3_1g1ax"]
+[ext_resource type="AudioStream" uid="uid://dxk8ryrfu6gab" path="res://table/assets/shuffle.wav" id="4_7nfmr"]
+[ext_resource type="AudioStream" uid="uid://r5xw3f7amne1" path="res://table/assets/card_contact.wav" id="5_enve6"]
+
+[sub_resource type="AudioStreamRandomizer" id="AudioStreamRandomizer_ji81h"]
+random_pitch = 1.5
+random_volume_offset_db = 3.0
+streams_count = 1
+stream_0/stream = ExtResource("5_enve6")
 
 [node name="Table" type="Node2D"]
 script = ExtResource("1_2jvkd")
@@ -40,3 +48,10 @@ position = Vector2(868, 30)
 
 [node name="Column7" parent="." instance=ExtResource("3_1g1ax")]
 position = Vector2(1008, 30)
+
+[node name="ShuffleAudioPlayer" type="AudioStreamPlayer" parent="."]
+stream = ExtResource("4_7nfmr")
+
+[node name="CardContactAudioPlayer" type="AudioStreamPlayer" parent="."]
+stream = SubResource("AudioStreamRandomizer_ji81h")
+volume_db = -3.0
