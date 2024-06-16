@@ -8,7 +8,7 @@
 
 [sub_resource type="AudioStreamRandomizer" id="AudioStreamRandomizer_ji81h"]
 random_pitch = 1.5
-random_volume_offset_db = 3.0
+random_volume_offset_db = 2.0
 streams_count = 1
 stream_0/stream = ExtResource("5_enve6")
 
@@ -54,4 +54,4 @@ stream = ExtResource("4_7nfmr")
 
 [node name="CardContactAudioPlayer" type="AudioStreamPlayer" parent="."]
 stream = SubResource("AudioStreamRandomizer_ji81h")
-volume_db = -3.0
+volume_db = -2.0
