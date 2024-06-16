@@ -2,15 +2,24 @@ extends CanvasLayer
 
 signal new_game_started
 
+const USER_PREFERENCES_PATH = "user://preferences.cfg"
+const AUDIO_PREFERENCES_SECTION = "audio"
+const AUDIO_PREFERENCES_MUTED_KEY = "muted"
+
+var _config = ConfigFile.new()
 @onready var _continue_button: Button = $Content/Column/ContinueButton
 @onready var _new_game_button: Button = $Content/Column/NewGameButton
+@onready var _mute_button: Button = $Content/Column/MuteButton
 @onready var _quit_button: Button = $Content/Column/QuitButton
 
 
 func _ready() -> void:
 	_continue_button.connect("pressed", _continue)
 	_new_game_button.connect("pressed", _new_game)
+	_mute_button.connect("pressed", _toggle_mute)
 	_quit_button.connect("pressed", _quit)
+	_config.load(USER_PREFERENCES_PATH)
+	_apply_audio_preferences()
 
 
 func _input(event: InputEvent) -> void:
@@ -25,6 +34,22 @@ func _continue():
 func _new_game():
 	new_game_started.emit()
 	visible = false
+
+
+func _apply_audio_preferences():
+	var is_muted = _is_muted()
+	AudioServer.set_bus_mute(0, is_muted)
+	_mute_button.text = "Unmute" if is_muted else "Mute"
+
+
+func _is_muted():
+	return _config.get_value(AUDIO_PREFERENCES_SECTION, AUDIO_PREFERENCES_MUTED_KEY, false)
+
+
+func _toggle_mute():
+	_config.set_value(AUDIO_PREFERENCES_SECTION, AUDIO_PREFERENCES_MUTED_KEY, not _is_muted())
+	_config.save(USER_PREFERENCES_PATH)
+	_apply_audio_preferences()
 
 
 func _quit():

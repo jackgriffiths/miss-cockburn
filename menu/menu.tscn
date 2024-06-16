@@ -37,6 +37,11 @@ layout_mode = 2
 theme_override_font_sizes/font_size = 28
 text = "New Game"
 
+[node name="MuteButton" type="Button" parent="Content/Column"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 28
+text = "Mute"
+
 [node name="QuitButton" type="Button" parent="Content/Column"]
 layout_mode = 2
 theme_override_font_sizes/font_size = 28
