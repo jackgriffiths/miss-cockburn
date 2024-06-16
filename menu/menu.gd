@@ -17,6 +17,7 @@ func _ready() -> void:
 	_continue_button.connect("pressed", _continue)
 	_new_game_button.connect("pressed", _new_game)
 	_mute_button.connect("pressed", _toggle_mute)
+	_quit_button.visible = not OS.has_feature("web")
 	_quit_button.connect("pressed", _quit)
 	_config.load(USER_PREFERENCES_PATH)
 	_apply_audio_preferences()
