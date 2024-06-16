@@ -5,7 +5,7 @@ extends Area2D
 
 var _size: Vector2
 
-@onready var _highlight: ColorRect = $Highlight
+@onready var _highlight: Panel = $Highlight
 @onready var _collision_shape: CollisionShape2D = $CollisionShape
 
 
