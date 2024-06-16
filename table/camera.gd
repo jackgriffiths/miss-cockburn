@@ -1,7 +1,7 @@
 extends Camera2D
 
-const SCROLL_SPEED = 50
-const AUTO_SCROLL_SPEED = 20
+const SCROLL_STEP = 50
+const AUTO_SCROLL_STEP = 20
 const AUTO_SCROLL_THRESHOLD = 100
 
 var auto_scroll = false
@@ -30,9 +30,9 @@ func _unhandled_input(event: InputEvent):
 			_drag_start_origin = get_global_mouse_position() - global_position
 			position_smoothing_enabled = false
 		if event.is_action_released("scroll_down"):
-			_move_within_limits(position.y + SCROLL_SPEED)
+			_move_within_limits(position.y + SCROLL_STEP)
 		elif event.is_action_released("scroll_up"):
-			_move_within_limits(position.y - SCROLL_SPEED)
+			_move_within_limits(position.y - SCROLL_STEP)
 
 
 func _process(_delta):
@@ -45,9 +45,9 @@ func _process(_delta):
 
 		if mouse_within_viewport:
 			if local_mouse_position.y < AUTO_SCROLL_THRESHOLD:
-				_move_within_limits(position.y - AUTO_SCROLL_SPEED)
+				_move_within_limits(position.y - AUTO_SCROLL_STEP)
 			elif local_mouse_position.y > _viewport_rect.size.y - AUTO_SCROLL_THRESHOLD:
-				_move_within_limits(position.y + AUTO_SCROLL_SPEED)
+				_move_within_limits(position.y + AUTO_SCROLL_STEP)
 
 
 func adjust_limits_for_table_height(height: float):
