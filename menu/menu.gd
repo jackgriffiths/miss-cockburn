@@ -7,10 +7,10 @@ const AUDIO_PREFERENCES_SECTION = "audio"
 const AUDIO_PREFERENCES_MUTED_KEY = "muted"
 
 var _config = ConfigFile.new()
-@onready var _continue_button: Button = $Content/Column/ContinueButton
-@onready var _new_game_button: Button = $Content/Column/NewGameButton
-@onready var _mute_button: Button = $Content/Column/MuteButton
-@onready var _quit_button: Button = $Content/Column/QuitButton
+@onready var _continue_button: Button = $Content/Column/Buttons/ContinueButton
+@onready var _new_game_button: Button = $Content/Column/Buttons/NewGameButton
+@onready var _mute_button: Button = $Content/Column/Buttons/MuteButton
+@onready var _quit_button: Button = $Content/Column/Buttons/QuitButton
 
 
 func _ready() -> void:
