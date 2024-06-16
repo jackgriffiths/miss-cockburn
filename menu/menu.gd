@@ -34,6 +34,7 @@ func _continue():
 func _new_game():
 	new_game_started.emit()
 	visible = false
+	_continue_button.visible = true
 
 
 func _apply_audio_preferences():

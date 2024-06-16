@@ -2,6 +2,7 @@ extends Node2D
 
 enum State {
 	INITIALIZING,
+	INITIALIZED,
 	DEALING,
 	PLAYING,
 }
@@ -31,24 +32,21 @@ var _deck: Array[Card] = []
 
 
 func _ready():
-	# Initialize
 	_state = State.INITIALIZING
 	_deck = _generate_deck()
-	
-	# Deal
-	_state = State.DEALING
-	await _deal()
-	
-	# Play
-	_state = State.PLAYING
-	_enable_card_interactions()
+	_state = State.INITIALIZED
 
 
 func start_new_game() -> void:
-	if _state == State.PLAYING:
+	if _state == State.INITIALIZED or _state == State.PLAYING:
+		var should_gather_cards = _state == State.PLAYING
+
 		_state = State.DEALING
 		_disable_card_interactions()
-		await _gather_cards()
+
+		if should_gather_cards:
+			await _gather_cards()
+
 		await _deal()
 		_enable_card_interactions()
 		_state = State.PLAYING
